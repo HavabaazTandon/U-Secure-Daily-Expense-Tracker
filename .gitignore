@@ -1,33 +1,113 @@
-# Environment and secrets
+﻿# Environment and secrets
 .env
 .env.*
 !.env.example
+.envrc
+.pypirc
+.streamlit/secrets.toml
 
 # Python
 __pycache__/
 *.py[cod]
-.pytest_cache/
-.coverage
-htmlcov/
+*.so
 *.egg-info/
+.Python
+*.manifest
+*.spec
+.installed.cfg
+*.egg
+MANIFEST
 
 # Virtual environments
 venv/
 .venv/
 env/
+ENV/
+env.bak/
+venv.bak/
+.pixi/
+conda-meta/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.cache/
+.hypothesis/
+nosetests.xml
+coverage.xml
+*.cover
+*.py.cover
+*.lcov
+cover/
+
+# Static analysis
+.scannerwork/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+.pytype/
+.ruff_cache/
+cython_debug/
 
 # Local data and logs
 instance/*.db
 instance/*.sqlite*
 logs/
 *.log
+*.pid
 
-# Editors and OS
+# Build and distribution
+build/
+dist/
+downloads/
+eggs/
+.eggs/
+wheels/
+share/python-wheels/
+develop-eggs/
+parts/
+sdist/
+var/
+lib/
+lib64/
+target/
+.pybuilder/
+.installed.cfg
+
+# Editors and operating systems
 .vscode/
 .idea/
+.spyderproject
+.spyproject
+.ropeproject
 .DS_Store
 Thumbs.db
+tempCodeRunnerFile.py
 
-# Generated analysis files
-.scannerwork/
-.pytest_cache/
+# Documentation build output
+docs/_build/
+site/
+
+# Other generated files
+.ipynb_checkpoints/
+__pycache__/
+.pybuilder/
+.scrapy/
+.webassets-cache
+.abstra/
+.pdm-python
+.pdm-build/
+__pypackages__/
+celerybeat-schedule*
+celerybeat.pid
+*.rdb
+*.aof
+mnesia/
+rabbitmq/
+rabbitmq-data/
+activemq-data/
