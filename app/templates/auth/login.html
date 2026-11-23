@@ -1,0 +1,14 @@
+{% extends "auth_base.html" %}
+{% from "partials/_forms.html" import field, password_field %}
+{% block title %}Sign in{% endblock %}
+{% block auth_content %}
+<h1 class="u-auth__title">Sign in</h1>
+<p class="u-auth__sub">Use the email address you registered with.</p>
+<form method="post" novalidate data-loading>
+  {{ form.hidden_tag() }}
+  {{ field(form.email, type='email', autocomplete='email', autofocus=true, inputmode='email') }}
+  {{ password_field(form.password) }}
+  <button type="submit" class="u-btn u-btn--primary u-btn--block" data-loading-label="Signing in">Sign in</button>
+</form>
+<p class="u-auth__switch">New to U? <a href="{{ url_for('auth.register') }}">Create an account</a></p>
+{% endblock %}

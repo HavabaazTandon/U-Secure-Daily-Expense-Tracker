@@ -1,0 +1,46 @@
+digraph ARCH {
+  graph [rankdir=TB, bgcolor="#F6F4F0", pad=0.4, nodesep=0.45, ranksep=0.6, fontname="Helvetica", label="System architecture: layered Flask application with Blueprints", labelloc=t, fontsize=18, fontcolor="#292725", compound=true];
+  node  [shape=box, style="rounded,filled", fillcolor="#FFFFFF", color="#E9E5DF", fontname="Helvetica", fontsize=12, fontcolor="#292725", penwidth=1.4, margin="0.2,0.12"];
+  edge  [color="#94636D", penwidth=1.5, fontname="Helvetica", fontsize=10, fontcolor="#6F6A64"];
+
+  browser [label="Browser\nHTML5 + CSS3 + Bootstrap 5 + JavaScript (ES6+)\nChart.js (served locally)", fillcolor="#F3E5E7"];
+
+  subgraph cluster_sec {
+    label="Security middleware"; style="rounded,filled"; fillcolor="#F0EDE8"; color="#E9E5DF"; fontcolor="#292725"; fontsize=12;
+    sec1 [label="Flask-WTF\nCSRF tokens"];
+    sec2 [label="Flask-Limiter\nrate limits"];
+    sec3 [label="Flask-Login\nsessions"];
+    sec4 [label="after_request\nCSP + security headers"];
+  }
+
+  subgraph cluster_bp {
+    label="Presentation layer: Blueprints, forms and Jinja2 templates"; style="rounded,filled"; fillcolor="#FFFFFF"; color="#E9E5DF"; fontcolor="#292725"; fontsize=12;
+    auth [label="auth\n/login /register /logout"];
+    main [label="main\n/dashboard"];
+    exp  [label="expenses\n/expenses (CRUD, filters)"];
+    ana  [label="analytics\n/analytics"];
+    acc  [label="account\n/account"];
+    forms [label="forms.py\nWTForms validation", fillcolor="#F3E5E7"];
+  }
+
+  subgraph cluster_svc {
+    label="Business-logic layer: services"; style="rounded,filled"; fillcolor="#FFFFFF"; color="#E9E5DF"; fontcolor="#292725"; fontsize=12;
+    s_auth [label="auth_service\ncredentials, lock-out"];
+    s_exp  [label="expense_service\nqueries, ownership checks"];
+    s_ana  [label="analytics_service\nsums, averages, % change"];
+  }
+
+  subgraph cluster_data {
+    label="Data layer"; style="rounded,filled"; fillcolor="#FFFFFF"; color="#E9E5DF"; fontcolor="#292725"; fontsize=12;
+    models [label="models.py\nSQLAlchemy ORM\nUser, Expense, LoginAttempt"];
+    db [label="SQLite database\n(parameterised queries, CHECK + FK constraints)", shape=cylinder, fillcolor="#F0EDE8"];
+  }
+
+  browser -> sec4 [label="HTTP request / response"];
+  sec4 -> sec1 -> sec2 -> sec3;
+  sec3 -> auth; sec3 -> main; sec3 -> exp; sec3 -> ana; sec3 -> acc;
+  exp -> forms; auth -> forms; acc -> forms;
+  auth -> s_auth; acc -> s_auth; exp -> s_exp; main -> s_ana; ana -> s_ana;
+  s_auth -> models; s_exp -> models; s_ana -> models;
+  models -> db;
+}

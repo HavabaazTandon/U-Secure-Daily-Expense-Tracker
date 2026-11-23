@@ -1,0 +1,114 @@
+{% extends "app_base.html" %}
+{% from "partials/_icons.html" import icon %}
+{% from "partials/_ui.html" import cat_badge, pager %}
+{% block title %}Transactions{% endblock %}
+{% block crumbs %}<li aria-current="page">Transactions</li>{% endblock %}
+
+{% block content %}
+<div class="u-page-head">
+  <div>
+    <h1 class="u-h1">Transactions</h1>
+    <p class="u-sub">Search, filter and manage every expense you have recorded.</p>
+  </div>
+  <a class="u-btn u-btn--primary" href="{{ url_for('expenses.new') }}">{{ icon('plus', 17) }}Add expense</a>
+</div>
+
+{% for message in filters.errors %}
+<p class="u-notice" role="status">{{ icon('info', 16) }}<span>{{ message }}</span></p>
+{% endfor %}
+
+<section class="u-panel u-panel--pad u-filterbar" aria-label="Filters">
+  <form method="get" action="{{ url_for('expenses.index') }}" role="search" class="u-filters">
+    <div class="u-field u-filters__search">
+      <label class="u-label" for="f-q">Search description</label>
+      <div class="u-input-wrap u-input-wrap--prefix">
+        <span class="u-input-prefix" aria-hidden="true">{{ icon('search', 17) }}</span>
+        <input class="u-input u-input--prefix" id="f-q" type="search" name="q" value="{{ filters.q }}" maxlength="100" placeholder="For example, groceries">
+      </div>
+    </div>
+    <div class="u-field">
+      <label class="u-label" for="f-category">Category</label>
+      <select class="u-input u-select" id="f-category" name="category">
+        <option value="">All categories</option>
+        {% for c in CATEGORIES %}<option value="{{ c }}" {% if filters.category == c %}selected{% endif %}>{{ c }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="u-field">
+      <label class="u-label" for="f-date">On date</label>
+      <input class="u-input" id="f-date" type="date" name="date" value="{{ filters.on_date.isoformat() if filters.on_date else '' }}">
+    </div>
+    <div class="u-field">
+      <label class="u-label" for="f-from">From</label>
+      <input class="u-input" id="f-from" type="date" name="date_from" value="{{ filters.date_from.isoformat() if filters.date_from else '' }}">
+    </div>
+    <div class="u-field">
+      <label class="u-label" for="f-to">To</label>
+      <input class="u-input" id="f-to" type="date" name="date_to" value="{{ filters.date_to.isoformat() if filters.date_to else '' }}">
+    </div>
+    <div class="u-field">
+      <label class="u-label" for="f-sort">Sort by</label>
+      <select class="u-input u-select" id="f-sort" name="sort">
+        {% for key, label in sort_options.items() %}<option value="{{ key }}" {% if filters.sort == key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </div>
+    <div class="u-filters__actions">
+      <button type="submit" class="u-btn u-btn--primary">Apply filters</button>
+      {% if filters.is_active or filters.sort != 'date_desc' %}<a class="u-btn u-btn--quiet" href="{{ url_for('expenses.index') }}">Clear filters</a>{% endif %}
+    </div>
+  </form>
+</section>
+
+<section class="u-panel" aria-labelledby="list-title">
+  <div class="u-panel__head">
+    <h2 class="u-label-lg" id="list-title">
+      {{ pagination.total }} transaction{{ '' if pagination.total == 1 else 's' }}{% if filters.is_active %} match{{ 'es' if pagination.total == 1 else '' }} your filters{% endif %}
+    </h2>
+    <p class="u-panel__meta">Total <strong class="u-num">{{ total|money }}</strong></p>
+  </div>
+
+  {% if pagination.items %}
+  <div class="u-table-wrap">
+    <table class="u-table u-table--stack">
+      <thead><tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col">Category</th><th scope="col" class="u-right">Amount</th><th scope="col" class="u-right"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+        {% for e in pagination.items %}
+        <tr>
+          <td data-label="Date" class="u-nowrap">{{ e.expense_date|fmt_date }}</td>
+          <td data-label="Description" class="u-desc">{% if e.description %}{{ e.description }}{% else %}<span class="u-muted">No description</span>{% endif %}</td>
+          <td data-label="Category">{{ cat_badge(e.category) }}</td>
+          <td data-label="Amount" class="u-right u-amount u-num">{{ e.amount|money }}</td>
+          <td class="u-right u-actions">
+            <a class="u-icon-btn" href="{{ url_for('expenses.edit', expense_id=e.id, next=current_url) }}" aria-label="Edit {{ e.category }} expense of {{ e.amount|money }}" title="Edit">{{ icon('edit', 17) }}</a>
+            <button type="button" class="u-icon-btn u-icon-btn--danger" data-bs-toggle="modal" data-bs-target="#deleteModal"
+                    data-delete-url="{{ url_for('expenses.delete', expense_id=e.id, next=current_url) }}"
+                    data-delete-summary="the {{ e.category }} expense of {{ e.amount|money }} on {{ e.expense_date|fmt_date }}"
+                    aria-label="Delete {{ e.category }} expense of {{ e.amount|money }}" title="Delete">{{ icon('trash', 17) }}</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="u-panel__foot">
+    <p class="u-hint">Showing {{ pagination.first }} to {{ pagination.last }} of {{ pagination.total }}</p>
+    {{ pager(pagination, filters) }}
+  </div>
+  {% elif filters.is_active %}
+  <div class="u-empty">
+    <span class="u-empty__icon">{{ icon('search', 22) }}</span>
+    <p class="u-empty__title">No transactions match</p>
+    <p class="u-empty__text">Try a different search term, widen the date range or choose another category.</p>
+    <a class="u-btn u-btn--ghost" href="{{ url_for('expenses.index') }}">Clear filters</a>
+  </div>
+  {% else %}
+  <div class="u-empty">
+    <span class="u-empty__icon">{{ icon('receipt', 22) }}</span>
+    <p class="u-empty__title">No expenses yet</p>
+    <p class="u-empty__text">Everything you record will be listed here.</p>
+    <a class="u-btn u-btn--primary" href="{{ url_for('expenses.new') }}">{{ icon('plus', 17) }}Add your first expense</a>
+  </div>
+  {% endif %}
+</section>
+
+{% include "partials/_delete_modal.html" %}
+{% endblock %}

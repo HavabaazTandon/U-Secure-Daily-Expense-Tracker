@@ -1,0 +1,34 @@
+PASS anonymous /dashboard redirects to login
+PASS weak password rejected with message
+PASS registration succeeds and redirects to login
+PASS wrong password shows generic message
+PASS login succeeds
+PASS empty dashboard shows empty state
+PASS form shows category + amount validation errors
+PASS three expenses listed
+PASS toast confirms save
+PASS search filters list
+PASS clear filters restores list
+PASS category filter works
+PASS edit saves
+PASS delete modal shows summary
+PASS cancel keeps all rows
+PASS delete removes the row
+PASS dashboard canvases drawn
+PASS dashboard has chart pixels
+PASS analytics 3 charts drawn
+PASS analytics range 3 ok
+PASS analytics range 12 ok
+PASS analytics range all ok
+PASS password change confirmed
+PASS logout returns to login
+PASS dashboard blocked after logout
+PASS back button does not reveal cached data
+PASS old password no longer works
+PASS new password works
+PASS no console errors / CSP violations during the run
+PASS database holds the 2 remaining expenses
+PASS stored password is a salted hash
+
+31/31 browser checks passed
+FAILED: []

@@ -1,0 +1,46 @@
+{% extends "app_base.html" %}
+{% from "partials/_icons.html" import icon %}
+{% from "partials/_forms.html" import field, money_field, category_picker %}
+{% set editing = (mode == 'edit') %}
+{% block title %}{{ 'Edit expense' if editing else 'Add expense' }}{% endblock %}
+{% block crumbs %}
+  {% if editing %}<li><a href="{{ url_for('expenses.index') }}">Transactions</a></li><li aria-current="page">Edit expense</li>
+  {% else %}<li aria-current="page">Add expense</li>{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="u-page-head">
+  <div>
+    <h1 class="u-h1">{{ 'Edit expense' if editing else 'Add expense' }}</h1>
+    <p class="u-sub">{{ 'Change any detail and save.' if editing else 'Record what you spent, when and on what.' }}</p>
+  </div>
+</div>
+
+<section class="u-panel u-panel--pad u-formpanel">
+  <form method="post" novalidate data-loading
+        action="{% if editing %}{{ url_for('expenses.edit', expense_id=expense.id, next=next_url) }}{% else %}{{ url_for('expenses.new') }}{% endif %}">
+    {{ form.hidden_tag() }}
+    {{ category_picker(form.category) }}
+    <div class="u-formrow">
+      {{ money_field(form.amount, hint='Up to two decimal places.') }}
+      {{ field(form.expense_date, type='date') }}
+    </div>
+    <div class="u-field{% if form.description.errors %} has-error{% endif %}">
+      {{ form.description.label(class_='u-label') }}
+      {{ form.description(class_='u-input u-textarea', rows=3, maxlength=255, placeholder='Optional, for example weekly groceries', aria_invalid=('true' if form.description.errors else 'false'), data_counter='desc-count') }}
+      <p class="u-hint u-hint--row"><span id="desc-count" aria-live="off">0</span>/255</p>
+      {% for message in form.description.errors %}<p class="u-error">{{ icon('alert', 15) }}<span>{{ message }}</span></p>{% endfor %}
+    </div>
+    <div class="u-formactions">
+      <button type="submit" class="u-btn u-btn--primary" data-loading-label="Saving">{{ 'Save changes' if editing else 'Save expense' }}</button>
+      <a class="u-btn u-btn--quiet" href="{{ next_url if editing and next_url else url_for('expenses.index') }}">Cancel</a>
+      {% if editing %}
+      <button type="button" class="u-btn u-btn--danger-quiet ms-auto" data-bs-toggle="modal" data-bs-target="#deleteModal"
+              data-delete-url="{{ url_for('expenses.delete', expense_id=expense.id, next=next_url) }}"
+              data-delete-summary="the {{ expense.category }} expense of {{ expense.amount|money }} on {{ expense.expense_date|fmt_date }}">{{ icon('trash', 16) }}Delete expense</button>
+      {% endif %}
+    </div>
+  </form>
+</section>
+{% if editing %}{% include "partials/_delete_modal.html" %}{% endif %}
+{% endblock %}

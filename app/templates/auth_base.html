@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% from "partials/_icons.html" import icon, brand_mark %}
+
+{% block body_class %}u-auth-page{% endblock %}
+
+{% block body %}
+<div class="u-auth">
+  <aside class="u-auth__brand">
+    <a class="u-auth__logo" href="{{ url_for('main.index') }}" aria-label="U Personal Finance">
+      <svg width="40" height="40" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="9" fill="#F3E5E7"/><path d="M10.5 9v8.4a5.5 5.5 0 0 0 11 0V9" fill="none" stroke="#94636D" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>U<small>Personal Finance</small></span>
+    </a>
+    <div class="u-auth__statement">
+      <p class="u-auth__lead">Record what you spend, then see where it goes.</p>
+      <ul class="u-auth__points">
+        <li>Log an expense in a few seconds.</li>
+        <li>Compare this month with the last.</li>
+        <li>Your records are visible only to your account.</li>
+      </ul>
+    </div>
+    <svg class="u-auth__glyph" viewBox="0 0 200 200" aria-hidden="true" focusable="false"><path d="M44 28v82a56 56 0 0 0 112 0V28" fill="none" stroke="currentColor" stroke-width="14" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  </aside>
+  <main class="u-auth__main" id="main">
+    <div class="u-auth__card">
+      <a class="u-auth__mobile-logo" href="{{ url_for('main.index') }}" aria-label="U Personal Finance">{{ brand_mark(34) }}<span>U<small>Personal Finance</small></span></a>
+      {% block auth_content %}{% endblock %}
+    </div>
+  </main>
+</div>
+{% endblock %}

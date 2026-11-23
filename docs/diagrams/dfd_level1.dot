@@ -1,0 +1,20 @@
+digraph DFD1 {
+  graph [rankdir=LR, bgcolor="#F6F4F0", pad=0.4, nodesep=0.6, ranksep=1.5, fontname="Helvetica", label="Data flow diagram, level 1", labelloc=t, fontsize=18, fontcolor="#292725"];
+  node  [fontname="Helvetica", fontsize=11, fontcolor="#292725"];
+  edge  [color="#94636D", penwidth=1.4, fontname="Helvetica", fontsize=9, fontcolor="#292725"];
+  user [label="User", shape=box, style=filled, fillcolor="#F3E5E7", color="#94636D", penwidth=1.6];
+  p1 [label="1.0\nAuthenticate", shape=circle, style=filled, fillcolor="#FFFFFF", color="#B77983", penwidth=2, width=1.4];
+  p2 [label="2.0\nManage\nexpenses", shape=circle, style=filled, fillcolor="#FFFFFF", color="#B77983", penwidth=2, width=1.4];
+  p3 [label="3.0\nAnalyse\nspending", shape=circle, style=filled, fillcolor="#FFFFFF", color="#B77983", penwidth=2, width=1.4];
+  p4 [label="4.0\nManage\naccount", shape=circle, style=filled, fillcolor="#FFFFFF", color="#B77983", penwidth=2, width=1.4];
+  node [shape=cylinder, style=filled, fillcolor="#F0EDE8", color="#A69B91"];
+  d1 [label="D1 users"]; d2 [label="D2 expenses"]; d3 [label="D3 login_attempts"];
+  user -> p1 [label="email, password"]; p1 -> user [label="session, error message"];
+  p1 -> d1 [label="verify hash"]; d1 -> p1 [label="user record"];
+  p1 -> d3 [label="attempt result"]; d3 -> p1 [label="recent failures"];
+  user -> p2 [label="expense form, filters"]; p2 -> user [label="transactions list"];
+  p2 -> d2 [label="create / update / delete"]; d2 -> p2 [label="owned rows only"];
+  d2 -> p3 [label="user's expenses"]; p3 -> user [label="dashboard, charts, insights"];
+  user -> p4 [label="profile, new password"]; p4 -> user [label="confirmation"];
+  p4 -> d1 [label="update"]; d3 -> p4 [label="sign-in activity"];
+}

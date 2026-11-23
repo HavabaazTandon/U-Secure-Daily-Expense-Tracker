@@ -1,0 +1,87 @@
+{% extends "app_base.html" %}
+{% from "partials/_icons.html" import icon %}
+{% from "partials/_forms.html" import field, password_field %}
+{% block title %}Account and security{% endblock %}
+{% block crumbs %}<li aria-current="page">Account and security</li>{% endblock %}
+
+{% block content %}
+<div class="u-page-head">
+  <div>
+    <h1 class="u-h1">Account and security</h1>
+    <p class="u-sub">Manage your details, your password and how your account is protected.</p>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-xl-7">
+    <section class="u-panel u-panel--pad" aria-labelledby="profile-title">
+      <h2 class="u-label-lg" id="profile-title">Profile</h2>
+      <dl class="u-facts">
+        <div><dt>Username</dt><dd>{{ current_user.username }}</dd></div>
+        <div><dt>Email address</dt><dd>{{ current_user.email }}</dd></div>
+        <div><dt>Member since</dt><dd>{{ current_user.created_at|fmt_date }}</dd></div>
+        <div><dt>Expenses recorded</dt><dd class="u-num">{{ expense_count }}</dd></div>
+      </dl>
+      <hr class="u-rule">
+      <h3 class="u-h3">Edit profile</h3>
+      <form method="post" action="{{ url_for('account.update_profile') }}" novalidate data-loading>
+        {{ profile_form.hidden_tag() }}
+        <div class="u-formrow">
+          {{ field(profile_form.username, autocomplete='name') }}
+          {{ field(profile_form.email, type='email', autocomplete='email') }}
+        </div>
+        {{ password_field(profile_form.current_password, hint='Only needed if you change your email address.') }}
+        <div class="u-formactions"><button type="submit" class="u-btn u-btn--primary" data-loading-label="Saving">Save profile</button></div>
+      </form>
+    </section>
+
+    <section class="u-panel u-panel--pad mt-4" aria-labelledby="pw-title">
+      <h2 class="u-label-lg" id="pw-title">Change password</h2>
+      <form method="post" action="{{ url_for('account.change_password') }}" novalidate data-loading>
+        {{ password_form.hidden_tag() }}
+        {{ password_field(password_form.current_password) }}
+        <div class="u-formrow">
+          {{ password_field(password_form.new_password, hint='At least 8 characters, with a letter and a number.', autocomplete='new-password') }}
+          {{ password_field(password_form.confirm_password, autocomplete='new-password') }}
+        </div>
+        <div class="u-formactions"><button type="submit" class="u-btn u-btn--primary" data-loading-label="Updating">Update password</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-5">
+    <section class="u-panel u-panel--tint u-panel--pad" aria-labelledby="sec-title">
+      <h2 class="u-label-lg" id="sec-title">Security information</h2>
+      <ul class="u-secure">
+        <li>{{ icon('lock', 18) }}<div><strong>Password storage</strong><p>Salted one-way hash ({{ current_user.password_hash.split('$')[0].split(':')[0] }}). The password itself is never stored.</p></div></li>
+        <li>{{ icon('shield', 18) }}<div><strong>Sign-in protection</strong><p>{{ max_failed }} failed attempts for one email lock sign-in for {{ lockout_minutes }} minutes.</p></div></li>
+        <li>{{ icon('calendar', 18) }}<div><strong>Session</strong><p>Your session cookie is HttpOnly and SameSite, and expires after 8 hours.</p></div></li>
+        <li>{{ icon('alert', 18) }}<div><strong>Failed attempts in the last 24 hours</strong><p class="u-num">{{ failed_last_day }}</p></div></li>
+      </ul>
+      <form method="post" action="{{ url_for('auth.logout') }}" class="mt-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="u-btn u-btn--ghost">{{ icon('logout', 16) }}Log out</button>
+      </form>
+    </section>
+
+    <section class="u-panel mt-4" aria-labelledby="act-title">
+      <div class="u-panel__head"><h2 class="u-label-lg" id="act-title">Recent sign-in activity</h2></div>
+      {% if activity %}
+      <div class="u-table-wrap">
+        <table class="u-table u-table--compact">
+          <thead><tr><th scope="col">When</th><th scope="col">Result</th></tr></thead>
+          <tbody>
+            {% for a in activity %}
+            <tr>
+              <td class="u-nowrap">{{ a.attempted_at|fmt_datetime }}</td>
+              <td>{% if a.success %}<span class="u-result u-result--ok">Signed in</span>{% else %}<span class="u-result u-result--fail">Failed attempt</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="u-empty-text u-pad">No sign-in activity recorded yet.</p>{% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

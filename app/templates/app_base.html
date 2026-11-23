@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% from "partials/_icons.html" import icon, brand_mark %}
+
+{% block body_class %}u-app{% endblock %}
+
+{% block body %}
+{% macro nav_item(endpoints, href, icon_name, label) -%}
+  {% set active = request.endpoint in endpoints %}
+  <li><a class="u-nav__link{% if active %} is-active{% endif %}" href="{{ href }}"{% if active %} aria-current="page"{% endif %}>{{ icon(icon_name, 19) }}<span>{{ label }}</span></a></li>
+{%- endmacro %}
+<a class="u-skip" href="#main">Skip to content</a>
+<div class="u-shell">
+  <div class="u-sidebar-wrap">
+    <div class="offcanvas-lg offcanvas-start u-offcanvas" tabindex="-1" id="sidebar" aria-label="Main navigation">
+      <div class="offcanvas-body u-sidebar">
+        <div class="u-brand">
+          <a class="u-brand__link" href="{{ url_for('main.dashboard') }}" aria-label="U Personal Finance, overview">
+            {{ brand_mark(34) }}
+            <span class="u-brand__text"><span class="u-brand__name">U</span><span class="u-brand__tag">Personal Finance</span></span>
+          </a>
+          <button type="button" class="u-icon-btn d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close menu">{{ icon('x') }}</button>
+        </div>
+
+        <nav class="u-nav" aria-label="Primary">
+          <ul>
+            {{ nav_item(['main.dashboard'], url_for('main.dashboard'), 'grid', 'Overview') }}
+            {{ nav_item(['expenses.index', 'expenses.edit'], url_for('expenses.index'), 'list', 'Transactions') }}
+            {{ nav_item(['expenses.new'], url_for('expenses.new'), 'plus-circle', 'Add expense') }}
+            {{ nav_item(['analytics.index'], url_for('analytics.index'), 'chart', 'Analytics') }}
+            {{ nav_item(['account.index', 'account.update_profile', 'account.change_password'], url_for('account.index'), 'shield', 'Account and security') }}
+          </ul>
+        </nav>
+
+        <div class="u-sidebar__foot">
+          <div class="u-usercard">
+            <span class="u-avatar" aria-hidden="true">{{ current_user.initial }}</span>
+            <span class="u-usercard__text"><span class="u-usercard__name">{{ current_user.username }}</span><span class="u-usercard__mail">{{ current_user.email }}</span></span>
+          </div>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="u-nav__link u-nav__link--button">{{ icon('logout', 19) }}<span>Log out</span></button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="u-content">
+    <header class="u-topbar">
+      <button type="button" class="u-icon-btn d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Open menu">{{ icon('menu') }}</button>
+      <nav aria-label="Breadcrumb">
+        <ol class="u-crumbs">
+          <li><a href="{{ url_for('main.dashboard') }}">U</a></li>
+          {% block crumbs %}{% endblock %}
+        </ol>
+      </nav>
+      <div class="dropdown ms-auto">
+        <button class="u-avatar-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open profile menu">
+          <span class="u-avatar">{{ current_user.initial }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end u-menu">
+          <li class="u-menu__who"><span class="u-menu__name">{{ current_user.username }}</span><span class="u-menu__mail">{{ current_user.email }}</span></li>
+          <li><a class="dropdown-item" href="{{ url_for('account.index') }}">{{ icon('shield', 17) }}Account and security</a></li>
+          <li>
+            <form method="post" action="{{ url_for('auth.logout') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="dropdown-item" type="submit">{{ icon('logout', 17) }}Log out</button>
+            </form>
+          </li>
+        </ul>
+      </div>
+    </header>
+    <main id="main" class="u-main" tabindex="-1">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% from "partials/_icons.html" import icon %}
+<div class="modal fade u-modal" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <form class="modal-content" method="post" action="" data-delete-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-body">
+        <h2 class="u-modal__title" id="deleteModalTitle">Delete this expense?</h2>
+        <p class="u-modal__text">This removes <strong data-delete-summary>the expense</strong> from your records. It cannot be undone.</p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="u-btn u-btn--ghost" data-bs-dismiss="modal">Keep expense</button>
+        <button type="submit" class="u-btn u-btn--danger" data-loading-label="Deleting">{{ icon('trash', 16) }}Delete expense</button>
+      </div>
+    </form>
+  </div>
+</div>

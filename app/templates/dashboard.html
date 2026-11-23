@@ -1,0 +1,126 @@
+{% extends "app_base.html" %}
+{% from "partials/_icons.html" import icon %}
+{% from "partials/_ui.html" import cat_badge, money_big, change_chip, insights_list %}
+{% block title %}Overview{% endblock %}
+{% block crumbs %}<li aria-current="page">Overview</li>{% endblock %}
+
+{% block content %}
+<div class="u-page-head">
+  <div>
+    <h1 class="u-h1">Overview</h1>
+    <p class="u-sub">{{ summary.current_label }}, up to {{ summary.today|fmt_day }}</p>
+  </div>
+  <a class="u-btn u-btn--primary" href="{{ url_for('expenses.new') }}">{{ icon('plus', 17) }}Add expense</a>
+</div>
+
+<div class="row g-4">
+  <div class="col-12 col-xl-8">
+    <section class="u-panel u-hero" aria-labelledby="hero-title">
+      <div class="u-hero__top">
+        <div class="u-hero__figure">
+          <h2 class="u-label-lg" id="hero-title">Spent in {{ summary.current_label }}</h2>
+          {{ money_big(summary.current_total) }}
+          {{ change_chip(summary.change_vs_same_days, summary.previous_name) }}
+          <div class="u-compare" role="group" aria-label="This month compared with last month">
+            <div class="u-compare__row">
+              <span class="u-compare__name">{{ summary.previous_label }}</span>
+              <span class="u-compare__val u-num">{{ summary.previous_total|money }}</span>
+              <span class="u-bar"><span class="u-bar__fill u-bar__fill--muted" data-width="{{ compare.previous }}"></span></span>
+            </div>
+            <div class="u-compare__row">
+              <span class="u-compare__name">{{ summary.current_label }} so far</span>
+              <span class="u-compare__val u-num">{{ summary.current_total|money }}</span>
+              <span class="u-bar"><span class="u-bar__fill" data-width="{{ compare.current }}"></span></span>
+            </div>
+          </div>
+        </div>
+        <div class="u-hero__chart">
+          <h2 class="u-label-lg">Monthly spending, last 6 months</h2>
+          {% if has_trend_data %}
+            <div class="u-chartbox u-chartbox--md"><canvas id="trendChart" role="img" aria-label="Bar chart of total spending for each of the last six months"></canvas></div>
+          {% else %}
+            <p class="u-empty-text">Your monthly trend appears here once you record expenses.</p>
+          {% endif %}
+        </div>
+      </div>
+      <dl class="u-stats">
+        <div><dt>Lifetime spending</dt><dd class="u-num">{{ summary.lifetime_total|money }}</dd></div>
+        <div><dt>Transactions</dt><dd class="u-num">{{ summary.count }}</dd></div>
+        <div><dt>Average transaction</dt><dd class="u-num">{{ summary.average|money }}</dd></div>
+        <div>
+          <dt>Highest expense</dt>
+          <dd class="u-num">{{ summary.highest|money }}</dd>
+          {% if summary.highest_expense %}<dd class="u-stats__note">{{ summary.highest_expense.category }}, {{ summary.highest_expense.expense_date|fmt_date }}</dd>{% endif %}
+        </div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <section class="u-panel u-panel--pad" aria-labelledby="cat-title">
+      <h2 class="u-label-lg" id="cat-title">Where {{ summary.current_label.split(' ')[0] }} went</h2>
+      {% if categories %}
+        <div class="u-chartbox u-chartbox--sm"><canvas id="categoryChart" role="img" aria-label="Doughnut chart of this month's spending by category"></canvas></div>
+        <ul class="u-legend">
+          {% for row in categories %}
+          <li>
+            <span class="u-cat cat-{{ row.category|lower }}"><span class="u-dot" aria-hidden="true"></span>{{ row.category }}</span>
+            <span class="u-legend__val u-num">{{ row.total|money }}</span>
+            <span class="u-legend__share u-num">{{ row.share }}%</span>
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="u-empty-text">Nothing recorded this month. Add an expense to see how it splits across categories.</p>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-8">
+    <section class="u-panel" aria-labelledby="recent-title">
+      <div class="u-panel__head">
+        <h2 class="u-label-lg" id="recent-title">Recent transactions</h2>
+        {% if summary.recent %}<a class="u-link" href="{{ url_for('expenses.index') }}">View all</a>{% endif %}
+      </div>
+      {% if summary.recent %}
+      <div class="u-table-wrap">
+        <table class="u-table u-table--stack">
+          <thead><tr><th scope="col">Date</th><th scope="col">Description</th><th scope="col">Category</th><th scope="col" class="u-right">Amount</th></tr></thead>
+          <tbody>
+            {% for e in summary.recent %}
+            <tr>
+              <td data-label="Date" class="u-nowrap">{{ e.expense_date|fmt_date }}</td>
+              <td data-label="Description" class="u-desc">{% if e.description %}{{ e.description }}{% else %}<span class="u-muted">No description</span>{% endif %}</td>
+              <td data-label="Category">{{ cat_badge(e.category) }}</td>
+              <td data-label="Amount" class="u-right u-amount u-num">{{ e.amount|money }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="u-empty">
+        <span class="u-empty__icon">{{ icon('receipt', 22) }}</span>
+        <p class="u-empty__title">No expenses yet</p>
+        <p class="u-empty__text">Record your first expense and this page starts working for you.</p>
+        <a class="u-btn u-btn--primary" href="{{ url_for('expenses.new') }}">{{ icon('plus', 17) }}Add your first expense</a>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  <div class="col-12 col-xl-4">
+    <section class="u-panel u-panel--tint u-panel--pad" aria-labelledby="insight-title">
+      <h2 class="u-label-lg" id="insight-title">Insights</h2>
+      <p class="u-hint">Calculated from your own records.</p>
+      {{ insights_list(insights, 'Insights appear once you have recorded an expense.') }}
+    </section>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script id="chart-data" type="application/json">{{ chart_data|tojson }}</script>
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

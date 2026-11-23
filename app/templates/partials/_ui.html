@@ -1,0 +1,55 @@
+{% from "partials/_icons.html" import icon %}
+
+{% macro cat_badge(category) -%}
+<span class="u-cat cat-{{ category|lower }}"><span class="u-dot" aria-hidden="true"></span>{{ category }}</span>
+{%- endmacro %}
+
+{# Large figure: currency symbol and decimals are set lighter than the digits. #}
+{% macro money_big(value) -%}
+{% set sym, whole, cents = value|money_parts %}
+<p class="u-figure u-num" aria-label="{{ value|money }}"><span class="u-figure__cur" aria-hidden="true">{{ sym }}</span><span class="u-figure__int" aria-hidden="true">{{ whole }}</span><span class="u-figure__dec" aria-hidden="true">{{ cents }}</span></p>
+{%- endmacro %}
+
+{% macro pager(pagination, filters, endpoint='expenses.index') -%}
+{% if pagination.pages > 1 %}
+<nav class="u-pager" aria-label="Pagination">
+  {% if pagination.has_prev %}
+  <a class="u-pager__btn" href="{{ url_for(endpoint, **filters.as_query(page=pagination.prev_num)) }}" rel="prev">Previous</a>
+  {% else %}<span class="u-pager__btn is-disabled" aria-disabled="true">Previous</span>{% endif %}
+  <ul class="u-pager__pages">
+    {% for p in pagination.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+      {% if p is none %}<li class="u-pager__gap" aria-hidden="true">…</li>
+      {% elif p == pagination.page %}<li><span class="u-pager__num is-current" aria-current="page">{{ p }}</span></li>
+      {% else %}<li><a class="u-pager__num" href="{{ url_for(endpoint, **filters.as_query(page=p)) }}">{{ p }}</a></li>{% endif %}
+    {% endfor %}
+  </ul>
+  {% if pagination.has_next %}
+  <a class="u-pager__btn" href="{{ url_for(endpoint, **filters.as_query(page=pagination.next_num)) }}" rel="next">Next</a>
+  {% else %}<span class="u-pager__btn is-disabled" aria-disabled="true">Next</span>{% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro insights_list(insights, empty_text) -%}
+{% if insights %}
+<ul class="u-insights">
+  {% for item in insights %}
+  <li><h3 class="u-insights__title">{{ item.title }}</h3><p class="u-insights__text">{{ item.text }}</p></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="u-empty-text">{{ empty_text }}</p>
+{% endif %}
+{%- endmacro %}
+
+{% macro change_chip(change, prev_name) -%}
+{% if change is none %}
+<p class="u-chip-delta is-neutral">No spending in the same days of {{ prev_name }} to compare with.</p>
+{% elif change > 0 %}
+<p class="u-chip-delta is-up">{{ icon('up', 15) }}<span><strong class="u-num">{{ change }}%</strong> higher than the same days of {{ prev_name }}</span></p>
+{% elif change < 0 %}
+<p class="u-chip-delta is-down">{{ icon('down', 15) }}<span><strong class="u-num">{{ change|abs }}%</strong> lower than the same days of {{ prev_name }}</span></p>
+{% else %}
+<p class="u-chip-delta is-neutral"><span>Level with the same days of {{ prev_name }}</span></p>
+{% endif %}
+{%- endmacro %}

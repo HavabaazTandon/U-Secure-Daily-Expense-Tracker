@@ -1,0 +1,31 @@
+digraph UC {
+  graph [rankdir=LR, bgcolor="#F6F4F0", pad=0.4, nodesep=0.28, ranksep=1.6, fontname="Helvetica", label="Use case diagram: U - Secure Daily Expense Tracker", labelloc=t, fontsize=18, fontcolor="#292725"];
+  node  [fontname="Helvetica", fontsize=11, fontcolor="#292725"];
+  edge  [color="#A69B91", arrowhead=none, penwidth=1.2];
+
+  user [label="User", shape=box, style="rounded,filled", fillcolor="#F3E5E7", color="#94636D", penwidth=1.6, fontsize=14, width=1.1, height=0.8];
+
+  subgraph cluster_sys {
+    label="U application boundary"; style="rounded,filled"; fillcolor="#FFFFFF"; color="#E9E5DF"; fontcolor="#292725"; fontsize=12;
+    node [shape=ellipse, style=filled, fillcolor="#F0EDE8", color="#E9E5DF"];
+    uc1 [label="Register account"];
+    uc2 [label="Log in"];
+    uc3 [label="Log out"];
+    uc4 [label="Edit profile"];
+    uc5 [label="Change password"];
+    uc6 [label="Add expense"];
+    uc7 [label="Edit expense"];
+    uc8 [label="Delete expense"];
+    uc9 [label="Search, filter and sort\ntransactions"];
+    uc10 [label="View overview dashboard"];
+    uc11 [label="View analytics charts"];
+    uc12 [label="Read financial insights"];
+    uc13 [label="Review security information\nand sign-in activity"];
+  }
+  user -> uc1; user -> uc2; user -> uc3; user -> uc4; user -> uc5; user -> uc6; user -> uc7; user -> uc8; user -> uc9; user -> uc10; user -> uc11; user -> uc12; user -> uc13;
+  edge [style=dashed, arrowhead=vee, color="#94636D", fontname="Helvetica", fontsize=9, fontcolor="#6F6A64"];
+  uc4 -> uc2 [label="requires"];
+  uc5 -> uc2 [label="requires"];
+  uc6 -> uc2 [label="requires"];
+  uc10 -> uc12 [label="includes"];
+}

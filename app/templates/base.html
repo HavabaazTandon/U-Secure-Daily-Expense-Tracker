@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#F6F4F0">
+  <title>{% block title %}U{% endblock %} | U Personal Finance</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='vendor/bootstrap/bootstrap.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/fonts.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/u.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  {% block body %}{% endblock %}
+
+  {% from "partials/_icons.html" import icon %}
+  <div class="toast-container u-toasts" aria-live="polite" aria-atomic="true">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        {% set kind = category if category in ['success', 'error', 'warning', 'info'] else 'info' %}
+        <div class="toast u-toast u-toast--{{ kind }}" role="{{ 'alert' if kind == 'error' else 'status' }}" data-bs-delay="{{ 7000 if kind == 'error' else 4500 }}">
+          <span class="u-toast__icon">{{ icon('check' if kind == 'success' else ('alert' if kind in ['error', 'warning'] else 'info'), 18) }}</span>
+          <p class="u-toast__text">{{ message }}</p>
+          <button type="button" class="u-toast__close" data-bs-dismiss="toast" aria-label="Dismiss">{{ icon('x', 16) }}</button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <script src="{{ url_for('static', filename='vendor/bootstrap/bootstrap.bundle.min.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/u.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

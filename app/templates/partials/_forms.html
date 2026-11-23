@@ -1,0 +1,57 @@
+{% from "partials/_icons.html" import icon %}
+
+{% macro errors(f) -%}
+{% for message in f.errors %}
+<p class="u-error" id="{{ f.id }}-error">{{ icon('alert', 15) }}<span>{{ message }}</span></p>
+{% endfor %}
+{%- endmacro %}
+
+{% macro field(f, hint=None, extra_class='') -%}
+<div class="u-field{% if f.errors %} has-error{% endif %}">
+  {{ f.label(class_='u-label') }}
+  {{ f(class_='u-input ' ~ extra_class, aria_invalid=('true' if f.errors else 'false'), aria_describedby=((f.id ~ '-error') if f.errors else ((f.id ~ '-hint') if hint else false)), **kwargs) }}
+  {% if hint and not f.errors %}<p class="u-hint" id="{{ f.id }}-hint">{{ hint }}</p>{% endif %}
+  {{ errors(f) }}
+</div>
+{%- endmacro %}
+
+{% macro password_field(f, hint=None, autocomplete='current-password') -%}
+<div class="u-field{% if f.errors %} has-error{% endif %}">
+  {{ f.label(class_='u-label') }}
+  <div class="u-input-wrap">
+    {{ f(class_='u-input u-input--action', autocomplete=autocomplete, aria_invalid=('true' if f.errors else 'false'), aria_describedby=((f.id ~ '-error') if f.errors else ((f.id ~ '-hint') if hint else false))) }}
+    <button type="button" class="u-input-action" data-toggle-password="{{ f.id }}" aria-label="Show password" aria-pressed="false">
+      <span data-icon-show>{{ icon('eye', 18) }}</span><span data-icon-hide hidden>{{ icon('eye-off', 18) }}</span>
+    </button>
+  </div>
+  {% if hint and not f.errors %}<p class="u-hint" id="{{ f.id }}-hint">{{ hint }}</p>{% endif %}
+  {{ errors(f) }}
+</div>
+{%- endmacro %}
+
+{% macro money_field(f, hint=None) -%}
+<div class="u-field{% if f.errors %} has-error{% endif %}">
+  {{ f.label(class_='u-label') }}
+  <div class="u-input-wrap u-input-wrap--prefix">
+    <span class="u-input-prefix" aria-hidden="true">{{ currency_symbol }}</span>
+    {{ f(class_='u-input u-input--prefix u-num', type='text', inputmode='decimal', autocomplete='off', placeholder='0.00', aria_invalid=('true' if f.errors else 'false'), aria_describedby=((f.id ~ '-error') if f.errors else ((f.id ~ '-hint') if hint else false))) }}
+  </div>
+  {% if hint and not f.errors %}<p class="u-hint" id="{{ f.id }}-hint">{{ hint }}</p>{% endif %}
+  {{ errors(f) }}
+</div>
+{%- endmacro %}
+
+{% macro category_picker(f) -%}
+<fieldset class="u-field u-fieldset{% if f.errors %} has-error{% endif %}">
+  <legend class="u-label">Category</legend>
+  <div class="u-chips" role="radiogroup" aria-label="Category">
+    {% for sub in f %}
+    <div class="u-chip cat-{{ sub.data|lower }}">
+      {{ sub(class_='u-chip__input') }}
+      <label class="u-chip__label" for="{{ sub.id }}"><span class="u-dot" aria-hidden="true"></span>{{ sub.label.text }}</label>
+    </div>
+    {% endfor %}
+  </div>
+  {{ errors(f) }}
+</fieldset>
+{%- endmacro %}

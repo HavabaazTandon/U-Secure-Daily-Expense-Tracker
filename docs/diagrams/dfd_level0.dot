@@ -1,0 +1,12 @@
+digraph DFD0 {
+  graph [rankdir=LR, bgcolor="#F6F4F0", pad=0.4, nodesep=0.8, ranksep=1.8, fontname="Helvetica", label="Data flow diagram, level 0 (context diagram)", labelloc=t, fontsize=18, fontcolor="#292725"];
+  node  [fontname="Helvetica", fontsize=12, fontcolor="#292725"];
+  edge  [color="#94636D", penwidth=1.5, fontname="Helvetica", fontsize=10, fontcolor="#292725"];
+  user [label="User", shape=box, style="filled", fillcolor="#F3E5E7", color="#94636D", penwidth=1.6];
+  sys  [label="0\nU Secure Daily\nExpense Tracker", shape=circle, style=filled, fillcolor="#FFFFFF", color="#B77983", penwidth=2.2, width=2.0];
+  store [label="Database\n(users, expenses,\nlogin attempts)", shape=cylinder, style=filled, fillcolor="#F0EDE8", color="#A69B91"];
+  user -> sys [label="registration data, credentials,\nexpense details, filters, profile changes"];
+  sys -> user [label="pages, charts, insights,\nvalidation messages, notifications"];
+  sys -> store [label="validated records,\nlogin attempts"];
+  store -> sys [label="user-scoped records"];
+}

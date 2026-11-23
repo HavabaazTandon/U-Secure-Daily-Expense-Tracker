@@ -1,0 +1,159 @@
+{% extends "app_base.html" %}
+{% from "partials/_icons.html" import icon %}
+{% from "partials/_ui.html" import cat_badge, insights_list, change_chip %}
+{% block title %}Analytics{% endblock %}
+{% block crumbs %}<li aria-current="page">Analytics</li>{% endblock %}
+
+{% block content %}
+<div class="u-page-head">
+  <div>
+    <h1 class="u-h1">Analytics</h1>
+    <p class="u-sub">Patterns in your spending, calculated from your records.</p>
+  </div>
+  <nav class="u-segment" aria-label="Time range">
+    {% for key, label in ranges.items() %}
+    <a href="{{ url_for('analytics.index', range=key) }}" class="u-segment__item{% if key == range_key %} is-active{% endif %}"{% if key == range_key %} aria-current="true"{% endif %}>{{ label }}</a>
+    {% endfor %}
+  </nav>
+</div>
+
+{% if not has_data %}
+<section class="u-panel">
+  <div class="u-empty">
+    <span class="u-empty__icon">{{ icon('chart', 22) }}</span>
+    <p class="u-empty__title">Nothing to analyse yet</p>
+    <p class="u-empty__text">Charts and statistics are built from the expenses you record.</p>
+    <a class="u-btn u-btn--primary" href="{{ url_for('expenses.new') }}">{{ icon('plus', 17) }}Add an expense</a>
+  </div>
+</section>
+{% else %}
+<div class="row g-4">
+  <div class="col-12">
+    <section class="u-panel u-panel--pad" aria-labelledby="kpi-title">
+      <h2 class="u-label-lg" id="kpi-title">{{ summary.current_label }} at a glance</h2>
+      <dl class="u-stats u-stats--flat">
+        <div><dt>Spent so far</dt><dd class="u-num">{{ month_stats.total|money }}</dd></div>
+        <div><dt>{{ summary.previous_label }} (full month)</dt><dd class="u-num">{{ summary.previous_total|money }}</dd></div>
+        <div><dt>Transactions this month</dt><dd class="u-num">{{ month_stats.count }}</dd></div>
+        <div><dt>Average per day</dt><dd class="u-num">{{ month_stats.daily_average|money }}</dd><dd class="u-stats__note">over {{ month_stats.days_elapsed }} day{{ '' if month_stats.days_elapsed == 1 else 's' }}</dd></div>
+      </dl>
+      {{ change_chip(summary.change_vs_same_days, summary.previous_name) }}
+    </section>
+  </div>
+
+  <div class="col-12 col-lg-8">
+    <section class="u-panel u-panel--pad" aria-labelledby="trend-title">
+      <h2 class="u-label-lg" id="trend-title">Monthly spending trend</h2>
+      <div class="u-chartbox u-chartbox--lg"><canvas id="trendChart" role="img" aria-label="Bar chart of total spending for each month in the selected range"></canvas></div>
+    </section>
+  </div>
+  <div class="col-12 col-lg-4">
+    <section class="u-panel u-panel--pad" aria-labelledby="dist-title">
+      <h2 class="u-label-lg" id="dist-title">Category distribution</h2>
+      {% if breakdown %}
+      <div class="u-chartbox u-chartbox--sm"><canvas id="distributionChart" role="img" aria-label="Doughnut chart of spending share by category in the selected range"></canvas></div>
+      <p class="u-hint">Share of spending in the selected range.</p>
+      {% else %}<p class="u-empty-text">No spending in this range.</p>{% endif %}
+    </section>
+  </div>
+
+  <div class="col-12 col-lg-6">
+    <section class="u-panel u-panel--pad" aria-labelledby="cmp-title">
+      <h2 class="u-label-lg" id="cmp-title">Category comparison</h2>
+      <p class="u-hint">{{ summary.current_label }} so far against {{ summary.previous_label }}.</p>
+      <div class="u-chartbox u-chartbox--md"><canvas id="comparisonChart" role="img" aria-label="Grouped bar chart comparing each category this month with last month"></canvas></div>
+    </section>
+  </div>
+  <div class="col-12 col-lg-6">
+    <section class="u-panel" aria-labelledby="cmp-table-title">
+      <div class="u-panel__head"><h2 class="u-label-lg" id="cmp-table-title">Change by category</h2></div>
+      <div class="u-table-wrap">
+        <table class="u-table u-table--compact">
+          <caption class="visually-hidden">Spending this month against the same days of last month, by category</caption>
+          <thead><tr><th scope="col">Category</th><th scope="col" class="u-right">This month</th><th scope="col" class="u-right">Same days in {{ summary.previous_name }}</th><th scope="col" class="u-right">Change</th></tr></thead>
+          <tbody>
+            {% for row in comparison %}
+            <tr>
+              <td>{{ cat_badge(row.category) }}</td>
+              <td class="u-right u-num">{{ row.current|money }}</td>
+              <td class="u-right u-num">{{ row.same_days|money }}</td>
+              <td class="u-right u-num">
+                {% if row.change is none %}<span class="u-muted">{{ '–' if row.current == 0 else 'New' }}</span>
+                {% elif row.change > 0 %}<span class="u-trend u-trend--up">+{{ row.change }}%</span>
+                {% elif row.change < 0 %}<span class="u-trend u-trend--down">{{ row.change }}%</span>
+                {% else %}<span class="u-muted">0%</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12">
+    <section class="u-panel" aria-labelledby="break-title">
+      <div class="u-panel__head"><h2 class="u-label-lg" id="break-title">Spending breakdown</h2><p class="u-panel__meta">{{ ranges[range_key] }}</p></div>
+      {% if breakdown %}
+      <div class="u-table-wrap">
+        <table class="u-table u-table--stack">
+          <thead><tr><th scope="col">Category</th><th scope="col" class="u-right">Total</th><th scope="col">Share</th><th scope="col" class="u-right">Transactions</th><th scope="col" class="u-right">Average</th><th scope="col" class="u-right">Largest</th></tr></thead>
+          <tbody>
+            {% for row in breakdown %}
+            <tr>
+              <td data-label="Category">{{ cat_badge(row.category) }}</td>
+              <td data-label="Total" class="u-right u-amount u-num">{{ row.total|money }}</td>
+              <td data-label="Share"><span class="u-share"><span class="u-bar"><span class="u-bar__fill cat-{{ row.category|lower }}" data-width="{{ row.share }}"></span></span><span class="u-num">{{ row.share }}%</span></span></td>
+              <td data-label="Transactions" class="u-right u-num">{{ row.count }}</td>
+              <td data-label="Average" class="u-right u-num">{{ row.average|money }}</td>
+              <td data-label="Largest" class="u-right u-num">{{ row.largest|money }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<p class="u-empty-text u-pad">No spending recorded in this range.</p>{% endif %}
+    </section>
+  </div>
+
+  <div class="col-12">
+    <section class="u-panel" aria-labelledby="stats-title">
+      <div class="u-panel__head"><h2 class="u-label-lg" id="stats-title">Monthly expense statistics</h2></div>
+      <div class="u-table-wrap">
+        <table class="u-table u-table--stack">
+          <thead><tr><th scope="col">Month</th><th scope="col" class="u-right">Total</th><th scope="col" class="u-right">Transactions</th><th scope="col" class="u-right">Average</th><th scope="col" class="u-right">Largest</th><th scope="col">Top category</th></tr></thead>
+          <tbody>
+            {% for m in monthly|reverse %}
+            <tr>
+              <td data-label="Month" class="u-nowrap">{{ m.label }}</td>
+              <td data-label="Total" class="u-right u-amount u-num">{{ m.total|money }}</td>
+              <td data-label="Transactions" class="u-right u-num">{{ m.count }}</td>
+              <td data-label="Average" class="u-right u-num">{{ m.average|money if m.average is not none else '–' }}</td>
+              <td data-label="Largest" class="u-right u-num">{{ m.largest|money if m.largest is not none else '–' }}</td>
+              <td data-label="Top category">{% if m.top_category %}{{ cat_badge(m.top_category) }}{% else %}<span class="u-muted">–</span>{% endif %}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <div class="col-12">
+    <section class="u-panel u-panel--tint u-panel--pad" aria-labelledby="ins-title">
+      <h2 class="u-label-lg" id="ins-title">Financial insights</h2>
+      <p class="u-hint">Plain arithmetic on your records: sums, averages and percentage changes. No prediction models are used.</p>
+      {{ insights_list(insights, 'Insights appear once you have recorded an expense.') }}
+    </section>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if has_data %}
+<script id="chart-data" type="application/json">{{ chart_data|tojson }}</script>
+<script src="{{ url_for('static', filename='vendor/chartjs/chart.umd.js') }}"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endif %}
+{% endblock %}
