@@ -297,3 +297,6 @@ The launcher provides a menu to start the Flask app, run the Pytest suite, open 
 - The launcher does not create a test account, change the database, or reset existing data.
 
 If the project virtual environment has not been created, follow the installation steps above first.
+## Project Report
+
+[View Final Capstone Project Report (PDF)](./Aaryan%20Tandon.Uma%20Mishra.SecureCodingCapstoneProject%20(2).pdf)
